@@ -4,7 +4,9 @@ import os
 from pathlib import Path
 from typing import Any
 from pydantic import BaseModel, Field, model_validator
+from dotenv import load_dotenv
 
+load_dotenv()
 
 class ModelConfig(BaseModel):
     name: str = "mistralai/devstral-2512:free"

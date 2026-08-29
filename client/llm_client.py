@@ -73,6 +73,7 @@ class LLMClient:
         for attempt in range(self._max_retries + 1):
             try:
                 if stream:
+                    kwargs["stream_options"] = {"include_usage": True}
                     async for event in self._stream_response(client, kwargs):
                         yield event
                 else:
@@ -118,12 +119,13 @@ class LLMClient:
         tool_calls: dict[int, dict[str, Any]] = {}
 
         async for chunk in response:
-            if hasattr(chunk, "usage") and chunk.usage:
+            if chunk.usage:
+                details = chunk.usage.prompt_tokens_details
                 usage = TokenUsage(
-                    prompt_tokens=chunk.usage.prompt_tokens,
-                    completion_tokens=chunk.usage.completion_tokens,
-                    total_tokens=chunk.usage.total_tokens,
-                    cached_tokens=chunk.usage.prompt_tokens_details.cached_tokens,
+                    prompt_tokens=chunk.usage.prompt_tokens or 0,
+                    completion_tokens=chunk.usage.completion_tokens or 0,
+                    total_tokens=chunk.usage.total_tokens or 0,
+                    cached_tokens=details.cached_tokens if details else 0,
                 )
 
             if not chunk.choices:
@@ -219,11 +221,12 @@ class LLMClient:
 
         usage = None
         if response.usage:
+            details = response.usage.prompt_tokens_details
             usage = TokenUsage(
-                prompt_tokens=response.usage.prompt_tokens,
-                completion_tokens=response.usage.completion_tokens,
-                total_tokens=response.usage.total_tokens,
-                cached_tokens=response.usage.prompt_tokens_details.cached_tokens,
+                prompt_tokens=response.usage.prompt_tokens or 0,
+                completion_tokens=response.usage.completion_tokens or 0,
+                total_tokens=response.usage.total_tokens or 0,
+                cached_tokens=details.cached_tokens if details else 0,
             )
 
         return StreamEvent(

@@ -1,0 +1,10 @@
+openai 
+click 
+rich 
+pydantic 
+tiktoken 
+platformdirs 
+tomli 
+fastmcp 
+httpx 
+ddgs
